@@ -5,9 +5,19 @@ import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
+import 'package:provider/provider.dart';
+import '../models/campaign_provider.dart';
+import '../models/user_provider.dart';
+import 'package:collection/collection.dart';
 
 class ExcelService {
+  static List<Map<String, dynamic>> _cachedCampaigns = [];
+
   static Future<List<Map<String, dynamic>>> loadExcelData(String userName, String userRole) async {
+    if (_cachedCampaigns.isNotEmpty) {
+      return _filterCampaignsByUserRole(userName, userRole);
+    }
+
     final ref = FirebaseStorage.instance.ref().child('data.xlsx');
     final url = await ref.getDownloadURL();
     final response = await http.get(Uri.parse(url));
@@ -68,23 +78,28 @@ class ExcelService {
               '유입수': row[12]?.value?.toString() ?? '0',
             };
 
-            if (userRole == 'master' ||
-                (userRole == '총판' && row[1]?.value == userName) ||
-                (userRole == '대행사' && row[2]?.value == userName) ||
-                (userRole == '셀러' && row[3]?.value == userName)) {
-              campaigns.add(campaign);
-            }
+            campaigns.add(campaign);
           }
         }
       }
 
-      return campaigns;
+      _cachedCampaigns = campaigns;
+      return _filterCampaignsByUserRole(userName, userRole);
     } else {
       throw Exception('Failed to load Excel data: ${response.statusCode}');
     }
   }
 
-  static Future<void> uploadFile(BuildContext context, Function loadExcelData) async {
+  static List<Map<String, dynamic>> _filterCampaignsByUserRole(String userName, String userRole) {
+    return _cachedCampaigns.where((campaign) {
+      return userRole == 'master' ||
+          (userRole == '총판' && campaign['총판'] == userName) ||
+          (userRole == '대행사' && campaign['대행사'] == userName) ||
+          (userRole == '셀러' && campaign['셀러'] == userName);
+    }).toList();
+  }
+
+  static Future<void> uploadFile(BuildContext context) async {
     try {
       html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
       uploadInput.accept = '.xlsx';
@@ -98,6 +113,26 @@ class ExcelService {
 
           reader.onLoadEnd.listen((event) async {
             final fileBytes = reader.result as Uint8List;
+
+            // 파일 형식 검증
+            var excel = Excel.decodeBytes(fileBytes);
+            var expectedHeaders = ['총판', '대행사', '셀러', '메인 키워드', '서브 키워드', '상품 URL', 'MID값', '원부 URL', '원부 MID값', '시작일', '종료일', '유입수'];
+            var sheet = excel.tables[excel.tables.keys.first];
+            if (sheet == null || sheet.rows.isEmpty || sheet.rows.first.length < expectedHeaders.length) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('올바른 형식의 파일이 아닙니다.')),
+              );
+              return;
+            }
+
+            // 헤더 검증
+            var headers = sheet.rows.first.map((cell) => cell?.value?.toString().trim()).toList();
+            if (!ListEquality().equals(headers, expectedHeaders)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('올바른 형식의 파일이 아닙니다.')),
+              );
+              return;
+            }
 
             final ref = FirebaseStorage.instance.ref().child('data.xlsx');
             final url = await ref.getDownloadURL();
@@ -131,7 +166,12 @@ class ExcelService {
                 SnackBar(content: Text('파일 업로드 성공')),
               );
 
-              loadExcelData();
+              // 새 데이터를 다시 로드하여 캐시를 업데이트
+              String userName = Provider.of<UserProvider>(context, listen: false).userDoc!['name'];
+              String userRole = Provider.of<UserProvider>(context, listen: false).userDoc!['role'];
+              _cachedCampaigns.clear(); // 기존 캐시 지우기
+              List<Map<String, dynamic>> campaignData = await loadExcelData(userName, userRole);
+              Provider.of<CampaignProvider>(context, listen: false).setCampaigns(campaignData);
             } else {
               throw Exception('Failed to load existing Excel data: ${response.statusCode}');
             }
@@ -146,5 +186,9 @@ class ExcelService {
         SnackBar(content: Text('파일 업로드 실패: $e')),
       );
     }
+  }
+
+  static void clearCache() {
+    _cachedCampaigns.clear();
   }
 }

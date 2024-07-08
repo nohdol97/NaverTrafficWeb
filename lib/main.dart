@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import '/models/user_provider.dart';
-import '/screen/login_page.dart';
-import '/screen/main_page.dart';
+import 'models/user_provider.dart';
+import 'models/campaign_provider.dart';
+import 'screen/login_page.dart';
+import 'screen/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..autoLogin()),
+        ChangeNotifierProvider(create: (ctx) => CampaignProvider()),
       ],
       child: Consumer<UserProvider>(
         builder: (ctx, userProvider, _) {
@@ -50,7 +52,9 @@ class MyApp extends StatelessWidget {
             ),
             home: userProvider.isLoading
                 ? Center(child: CircularProgressIndicator())
-                : userProvider.userDoc != null ? MainPage() : LoginPage(),
+                : userProvider.userDoc != null
+                    ? MainPage()
+                    : LoginPage(),
           );
         },
       ),

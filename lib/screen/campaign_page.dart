@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/campaign_provider.dart';
 import '../models/user_provider.dart';
 import '../services/excel_service.dart';
 import '../widgets/campaign_data_table.dart';
@@ -11,7 +12,6 @@ class CampaignPage extends StatefulWidget {
 }
 
 class _CampaignPageState extends State<CampaignPage> {
-  List<Map<String, dynamic>> campaigns = [];
   List<Map<String, dynamic>> filteredCampaigns = [];
   String searchColumn = '식별번호';
   TextEditingController searchController = TextEditingController();
@@ -19,32 +19,16 @@ class _CampaignPageState extends State<CampaignPage> {
   @override
   void initState() {
     super.initState();
-    loadExcelData();
-  }
-
-  Future<void> loadExcelData() async {
-    try {
-      var userProvider = Provider.of<UserProvider>(context, listen: false);
-      var userDoc = userProvider.userDoc;
-      var userData = userDoc?.data() as Map<String, dynamic>?;
-
-      String userName = userData?['name'] ?? 'Unknown User';
-      String userRole = userData?['role'] ?? 'Unknown Role';
-
-      List<Map<String, dynamic>> campaignData = await ExcelService.loadExcelData(userName, userRole);
-      setState(() {
-        campaigns = campaignData;
-        filteredCampaigns = campaigns;
-      });
-    } catch (e) {
-      print('Failed to load Excel data: $e');
-    }
+    // Load the campaigns data
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final campaignProvider = Provider.of<CampaignProvider>(context, listen: false);
+    campaignProvider.loadInitialData(userProvider.userDoc!['name'], userProvider.userDoc!['role']);
   }
 
   void filterCampaigns(String searchText) {
     searchText = searchText.toLowerCase();
     setState(() {
-      filteredCampaigns = campaigns.where((campaign) {
+      filteredCampaigns = Provider.of<CampaignProvider>(context, listen: false).campaigns.where((campaign) {
         var value = campaign[searchColumn].toString().toLowerCase();
         return value.contains(searchText);
       }).toList();
@@ -61,27 +45,32 @@ class _CampaignPageState extends State<CampaignPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.upload_file),
-            onPressed: () => ExcelService.uploadFile(context, loadExcelData),
+            onPressed: () => ExcelService.uploadFile(context),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          custom.SearchBar(
-            columns: columns,
-            searchColumn: searchColumn,
-            searchController: searchController,
-            onSearchColumnChanged: (value) {
-              setState(() {
-                searchColumn = value;
-              });
-            },
-            onSearchTextChanged: filterCampaigns,
-          ),
-          Expanded(
-            child: CampaignDataTable(columns: columns, campaigns: filteredCampaigns),
-          ),
-        ],
+      body: Consumer<CampaignProvider>(
+        builder: (context, campaignProvider, child) {
+          filteredCampaigns = campaignProvider.campaigns;
+          return Column(
+            children: [
+              custom.SearchBar(
+                columns: columns,
+                searchColumn: searchColumn,
+                searchController: searchController,
+                onSearchColumnChanged: (value) {
+                  setState(() {
+                    searchColumn = value;
+                  });
+                },
+                onSearchTextChanged: filterCampaigns,
+              ),
+              Expanded(
+                child: CampaignDataTable(columns: columns, campaigns: filteredCampaigns),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
