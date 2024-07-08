@@ -38,7 +38,7 @@ class SearchBar extends StatelessWidget {
               }).toList(),
             ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 15),
           SizedBox(
             width: 200,
             child: TextField(
@@ -50,6 +50,7 @@ class SearchBar extends StatelessWidget {
               onChanged: onSearchTextChanged,
             ),
           ),
+          SizedBox(width:20),
         ],
       ),
     );

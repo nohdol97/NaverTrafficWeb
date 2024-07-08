@@ -14,14 +14,27 @@ class CampaignPage extends StatefulWidget {
 class _CampaignPageState extends State<CampaignPage> {
   String searchColumn = '식별번호';
   TextEditingController searchController = TextEditingController();
+  ScrollController _scrollController = ScrollController();
+  List<Map<String, dynamic>> displayedCampaigns = [];
+  int _currentMax = 15;
 
   @override
   void initState() {
     super.initState();
-    // Load the campaigns data
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final campaignProvider = Provider.of<CampaignProvider>(context, listen: false);
     campaignProvider.loadInitialData(userProvider.userDoc!['name'], userProvider.userDoc!['role']);
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        _loadMore();
+      }
+    });
+  }
+
+  void _loadMore() {
+    setState(() {
+      _currentMax = (_currentMax + 10).clamp(0, Provider.of<CampaignProvider>(context, listen: false).campaigns.length);
+    });
   }
 
   List<Map<String, dynamic>> getFilteredCampaigns(List<Map<String, dynamic>> campaigns) {
@@ -41,15 +54,16 @@ class _CampaignPageState extends State<CampaignPage> {
         title: Text('캠페인'),
         actions: [
           IconButton(
-            icon: Icon(Icons.upload_file, color: Colors.green),
+            icon: Icon(Icons.upload_file, size: 50, color: Colors.green),
             onPressed: () => ExcelService.uploadFile(context),
           ),
-          SizedBox(width: 25,),
+          SizedBox(width: 20),
         ],
       ),
       body: Consumer<CampaignProvider>(
         builder: (context, campaignProvider, child) {
           List<Map<String, dynamic>> filteredCampaigns = getFilteredCampaigns(campaignProvider.campaigns);
+          displayedCampaigns = filteredCampaigns.take(_currentMax).toList();
           return Column(
             children: [
               Padding(
@@ -69,7 +83,29 @@ class _CampaignPageState extends State<CampaignPage> {
                 ),
               ),
               Expanded(
-                child: CampaignDataTable(columns: columns, campaigns: filteredCampaigns),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: columns.map((column) => Container(
+                          width: 130, // 각 컬럼의 고정 너비
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            column,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        )).toList(),
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          child: CampaignDataTable(columns: columns, campaigns: displayedCampaigns),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           );
