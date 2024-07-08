@@ -38,6 +38,24 @@
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+
+  <!-- Firebase JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5AGKNuIahPGbqV77YOaGmDe4zYq9TkFM",
+      authDomain: "navertrafficweb-fed26.firebaseapp.com",
+      projectId: "navertrafficweb-fed26",
+      storageBucket: "navertrafficweb-fed26.appspot.com",
+      messagingSenderId: "453423599082",
+      appId: "1:453423599082:web:ce2c2177ee5ca201ed7693"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </head>
 <body>
   <script>
