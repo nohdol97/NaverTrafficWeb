@@ -7,6 +7,7 @@ import 'campaign_page.dart';
 import 'refund_page.dart';
 import 'settings_page.dart';
 import 'register_page.dart';
+import 'login_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -40,9 +41,6 @@ class _MainPageState extends State<MainPage> {
     String userName = userData?['name'] ?? 'Unknown User';
     String userRole = userData?['role'] ?? 'Unknown Role';
 
-    // 디버깅을 위한 로그 출력
-    print('User Role: $userRole');
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard - $userRole'),
@@ -60,6 +58,19 @@ class _MainPageState extends State<MainPage> {
                 style: TextStyle(color: Colors.blue),
               ),
             ),
+          TextButton(
+            onPressed: () async {
+              await Provider.of<UserProvider>(context, listen: false).logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+            child: Text(
+              '로그아웃',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
         ],
       ),
       drawer: Drawer(

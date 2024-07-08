@@ -3,7 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '/models/user_provider.dart';
-import '/screen/login_page.dart';  // 로그인 화면을 import 합니다.
+import '/screen/login_page.dart';
+import '/screen/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +17,7 @@ void main() async {
       messagingSenderId: "453423599082",
       appId: "1:453423599082:web:ce2c2177ee5ca201ed7693",
     ),
-  );  // Firebase 초기화
+  );
 
   // Firestore 오프라인 지원 활성화
   FirebaseFirestore.instance.settings = const Settings(
@@ -38,14 +39,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()..autoLogin()),
       ],
-      child: MaterialApp(
-        title: 'Web Dashboard',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: LoginPage(),  // 앱 시작 화면을 LoginPage으로 설정
+      child: Consumer<UserProvider>(
+        builder: (ctx, userProvider, _) {
+          return MaterialApp(
+            title: 'Web Dashboard',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            home: userProvider.isLoading
+                ? Center(child: CircularProgressIndicator())
+                : userProvider.userDoc != null ? MainPage() : LoginPage(),
+          );
+        },
       ),
     );
   }

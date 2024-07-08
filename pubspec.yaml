@@ -46,6 +46,7 @@ dependencies:
   file_picker: ^4.0.0
   flutter_web_plugins:
     sdk: flutter
+  localstorage: ^4.0.0
 
 dev_dependencies:
   flutter_test:

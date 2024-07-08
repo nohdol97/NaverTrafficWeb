@@ -21,8 +21,11 @@ class SearchBar extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          Expanded(
+          Spacer(),
+          SizedBox(
+            width: 150, // 적당한 크기로 설정
             child: DropdownButton<String>(
+              isExpanded: true,
               value: searchColumn,
               onChanged: (String? newValue) {
                 onSearchColumnChanged(newValue!);
@@ -35,8 +38,9 @@ class SearchBar extends StatelessWidget {
               }).toList(),
             ),
           ),
-          Expanded(
-            flex: 2,
+          SizedBox(width: 8), // Dropdown과 TextField 사이 간격
+          SizedBox(
+            width: 300, // 적당한 크기로 설정
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
