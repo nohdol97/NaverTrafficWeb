@@ -12,7 +12,6 @@ class CampaignPage extends StatefulWidget {
 }
 
 class _CampaignPageState extends State<CampaignPage> {
-  List<Map<String, dynamic>> filteredCampaigns = [];
   String searchColumn = '식별번호';
   TextEditingController searchController = TextEditingController();
 
@@ -25,14 +24,12 @@ class _CampaignPageState extends State<CampaignPage> {
     campaignProvider.loadInitialData(userProvider.userDoc!['name'], userProvider.userDoc!['role']);
   }
 
-  void filterCampaigns(String searchText) {
-    searchText = searchText.toLowerCase();
-    setState(() {
-      filteredCampaigns = Provider.of<CampaignProvider>(context, listen: false).campaigns.where((campaign) {
-        var value = campaign[searchColumn].toString().toLowerCase();
-        return value.contains(searchText);
-      }).toList();
-    });
+  List<Map<String, dynamic>> getFilteredCampaigns(List<Map<String, dynamic>> campaigns) {
+    String searchText = searchController.text.toLowerCase();
+    return campaigns.where((campaign) {
+      var value = campaign[searchColumn]?.toString().toLowerCase() ?? '';
+      return value.contains(searchText);
+    }).toList();
   }
 
   @override
@@ -44,26 +41,32 @@ class _CampaignPageState extends State<CampaignPage> {
         title: Text('캠페인'),
         actions: [
           IconButton(
-            icon: Icon(Icons.upload_file),
+            icon: Icon(Icons.upload_file, color: Colors.green),
             onPressed: () => ExcelService.uploadFile(context),
           ),
+          SizedBox(width: 25,),
         ],
       ),
       body: Consumer<CampaignProvider>(
         builder: (context, campaignProvider, child) {
-          filteredCampaigns = campaignProvider.campaigns;
+          List<Map<String, dynamic>> filteredCampaigns = getFilteredCampaigns(campaignProvider.campaigns);
           return Column(
             children: [
-              custom.SearchBar(
-                columns: columns,
-                searchColumn: searchColumn,
-                searchController: searchController,
-                onSearchColumnChanged: (value) {
-                  setState(() {
-                    searchColumn = value;
-                  });
-                },
-                onSearchTextChanged: filterCampaigns,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: custom.SearchBar(
+                  columns: columns,
+                  searchColumn: searchColumn,
+                  searchController: searchController,
+                  onSearchColumnChanged: (value) {
+                    setState(() {
+                      searchColumn = value;
+                    });
+                  },
+                  onSearchTextChanged: (text) {
+                    setState(() {}); // Trigger a rebuild to filter the campaigns
+                  },
+                ),
               ),
               Expanded(
                 child: CampaignDataTable(columns: columns, campaigns: filteredCampaigns),
