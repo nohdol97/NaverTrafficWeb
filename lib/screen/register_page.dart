@@ -21,7 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _register() async {
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text+"@tripple.com",
+        email: _emailController.text + "@split.com",
         password: _passwordController.text,
       );
 

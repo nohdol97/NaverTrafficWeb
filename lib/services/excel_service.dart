@@ -92,7 +92,7 @@ class ExcelService {
 
   static List<Map<String, dynamic>> _filterCampaignsByUserRole(String userName, String userRole) {
     return _cachedCampaigns.where((campaign) {
-      return userRole == 'master' ||
+      return userRole == 'SuperMaster' || userRole == 'master' ||
           (userRole == '총판' && campaign['총판'] == userName) ||
           (userRole == '대행사' && campaign['대행사'] == userName) ||
           (userRole == '셀러' && campaign['셀러'] == userName);

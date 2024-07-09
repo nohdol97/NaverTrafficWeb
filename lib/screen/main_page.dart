@@ -4,8 +4,6 @@ import '../models/user_provider.dart';
 import 'dashboard_page.dart';
 import 'notice_page.dart';
 import 'campaign_page.dart';
-import 'refund_page.dart';
-import 'settings_page.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 
@@ -20,8 +18,6 @@ class _MainPageState extends State<MainPage> {
     DashboardPage(),
     NoticePage(),
     CampaignPage(),
-    RefundPage(),
-    SettingsPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -43,9 +39,9 @@ class _MainPageState extends State<MainPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard - $userRole'),
+        title: Text('SPLIT ) $userName 님 환영합니다.'),
         actions: [
-          if (userRole == 'master')
+          if (userRole == 'SuperMaster' || userRole == 'master')
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -94,20 +90,6 @@ class _MainPageState extends State<MainPage> {
               title: Text('캠페인'),
               onTap: () {
                 _onItemTapped(2);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('환불'),
-              onTap: () {
-                _onItemTapped(3);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('설정'),
-              onTap: () {
-                _onItemTapped(4);
                 Navigator.pop(context);
               },
             ),

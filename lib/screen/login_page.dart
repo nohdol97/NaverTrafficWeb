@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'main_page.dart';
 import '../models/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,24 +8,15 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
-  void _login() async {
-    try {
-      await Provider.of<UserProvider>(context, listen: false).login(
-        _emailController.text + "@tripple.com",
+  void _submitForm() {
+    if (_formKey.currentState?.validate() ?? false) {
+      Provider.of<UserProvider>(context, listen: false).login(
+        _emailController.text + "@split.com",
         _passwordController.text,
-      );
-
-      // 역할에 따라 다른 화면으로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainPage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 실패: $e')),
       );
     }
   }
@@ -34,28 +24,73 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('로그인'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: '아이디'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('로그인'),
-            ),
-          ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'SPLIT',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              Container(
+                width: 300, // 가로 길이를 줄임
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10.0,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: '아이디'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '아이디를 입력해주세요.';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(labelText: '비밀번호'),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '비밀번호를 입력해주세요.';
+                          }
+                          return null;
+                        },
+                        onFieldSubmitted: (value) => _submitForm(),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0), // 둥근 모서리 조정
+                          ),
+                        ),
+                        child: Text('로그인'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
