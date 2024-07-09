@@ -17,6 +17,8 @@ class _CampaignPageState extends State<CampaignPage> {
   ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> displayedCampaigns = [];
   int _currentMax = 15;
+  String? selectedFile;
+  List<String> excelFiles = [];
 
   @override
   void initState() {
@@ -28,6 +30,14 @@ class _CampaignPageState extends State<CampaignPage> {
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
         _loadMore();
       }
+    });
+    _loadExcelFiles();
+  }
+
+  Future<void> _loadExcelFiles() async {
+    excelFiles = await ExcelService.listExcelFiles();
+    setState(() {
+      selectedFile = excelFiles.isNotEmpty ? excelFiles.first : null;
     });
   }
 
@@ -55,18 +65,52 @@ class _CampaignPageState extends State<CampaignPage> {
         title: Text('캠페인'),
         actions: [
           if (userProvider.userDoc!['role'] == 'SuperMaster' || userProvider.userDoc!['role'] == 'master') ...[
+            DropdownButton<String>(
+              value: selectedFile,
+              items: excelFiles.map((String file) {
+                return DropdownMenuItem<String>(
+                  value: file,
+                  child: Text(file),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedFile = newValue;
+                });
+              },
+            ),
             IconButton(
               icon: Icon(Icons.download, size: 50, color: Colors.blue),
-              onPressed: () => ExcelService.downloadExcel(),
+              onPressed: selectedFile == null
+                  ? null
+                  : () => ExcelService.downloadExcel(selectedFile!),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, size: 50, color: Colors.red),
+              onPressed: selectedFile == null
+                  ? null
+                  : () async {
+                      await ExcelService.deleteExcelFile(selectedFile!, context);
+                      await _loadExcelFiles();
+                    },
             ),
             IconButton(
               icon: Icon(Icons.recycling, size: 50, color: Colors.green),
-              onPressed: () => ExcelService.uploadExcel(context),
+              onPressed: () => ExcelService.uploadExcelFile(userProvider.userDoc!['name'], context),
             ),
           ],
+          TextButton(
+            onPressed: () async {
+              await ExcelService.downloadExcel('SPLIT 캠페인 업로드 파일.xlsx');
+            },
+            child: Text(
+              '업로드용 파일 다운로드',
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
           IconButton(
             icon: Icon(Icons.upload_file, size: 50, color: Colors.green),
-            onPressed: () => ExcelService.uploadFile(context),
+            onPressed: () => ExcelService.updateDataExcel(context),
           ),
           SizedBox(width: 20),
         ],
