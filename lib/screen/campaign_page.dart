@@ -47,12 +47,23 @@ class _CampaignPageState extends State<CampaignPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
     var columns = ['식별번호', '상태', '총판', '대행사', '셀러', '메인 키워드', '서브 키워드', '상품 URL', 'MID값', '원부 URL', '원부 MID값', '시작일', '종료일', '유입수'];
 
     return Scaffold(
       appBar: AppBar(
         title: Text('캠페인'),
         actions: [
+          if (userProvider.userDoc!['role'] == 'SuperMaster' || userProvider.userDoc!['role'] == 'master') ...[
+            IconButton(
+              icon: Icon(Icons.download, size: 50, color: Colors.blue),
+              onPressed: () => ExcelService.downloadExcel(),
+            ),
+            IconButton(
+              icon: Icon(Icons.recycling, size: 50, color: Colors.green),
+              onPressed: () => ExcelService.uploadExcel(context),
+            ),
+          ],
           IconButton(
             icon: Icon(Icons.upload_file, size: 50, color: Colors.green),
             onPressed: () => ExcelService.uploadFile(context),

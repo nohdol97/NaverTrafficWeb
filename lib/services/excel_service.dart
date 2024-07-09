@@ -188,6 +188,94 @@ class ExcelService {
     }
   }
 
+  static Future<void> downloadExcel() async {
+    final ref = FirebaseStorage.instance.ref().child('data.xlsx');
+    final url = await ref.getDownloadURL();
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final blob = html.Blob([response.bodyBytes]);
+      final downloadUrl = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: downloadUrl)
+        ..setAttribute('download', 'data.xlsx')
+        ..click();
+      html.Url.revokeObjectUrl(downloadUrl);
+    } else {
+      throw Exception('Failed to download Excel file: ${response.statusCode}');
+    }
+  }
+
+  static Future<void> uploadExcel(BuildContext context) async {
+    try {
+      html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+      uploadInput.accept = '.xlsx';
+      uploadInput.click();
+
+      uploadInput.onChange.listen((event) async {
+        final files = uploadInput.files;
+        if (files!.isNotEmpty) {
+          final file = files[0];
+
+          if (file.name != 'data.xlsx') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('파일명이 data.xlsx 이어야 합니다.')),
+            );
+            return;
+          }
+
+          final reader = html.FileReader();
+
+          reader.onLoadEnd.listen((event) async {
+            final fileBytes = reader.result as Uint8List;
+
+            // 파일 형식 검증
+            var excel = Excel.decodeBytes(fileBytes);
+            var expectedHeaders = ['식별번호', '총판', '대행사', '셀러', '메인 키워드', '서브 키워드', '상품 URL', 'MID값', '원부 URL', '원부 MID값', '시작일', '종료일', '유입수'];
+            var sheet = excel.tables[excel.tables.keys.first];
+            if (sheet == null || sheet.rows.isEmpty || sheet.rows.first.length < expectedHeaders.length) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('올바른 형식의 파일이 아닙니다.')),
+              );
+              return;
+            }
+
+            // 헤더 검증
+            var headers = sheet.rows.first.map((cell) => cell?.value?.toString().trim()).toList();
+            if (!ListEquality().equals(headers, expectedHeaders)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('올바른 형식의 파일이 아닙니다.')),
+              );
+              return;
+            }
+
+            final ref = FirebaseStorage.instance.ref().child('data.xlsx');
+            final uploadTask = ref.putData(fileBytes);
+
+            await uploadTask.whenComplete(() => null);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('파일 교체 성공')),
+            );
+
+            // 캐시를 비우고 데이터를 다시 로드
+            String userName = Provider.of<UserProvider>(context, listen: false).userDoc!['name'];
+            String userRole = Provider.of<UserProvider>(context, listen: false).userDoc!['role'];
+            _cachedCampaigns.clear();
+            List<Map<String, dynamic>> campaignData = await loadExcelData(userName, userRole);
+            Provider.of<CampaignProvider>(context, listen: false).setCampaigns(campaignData);
+          });
+
+          reader.readAsArrayBuffer(file);
+        }
+      });
+    } catch (e) {
+      print('Failed to upload file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('파일 교체 실패: $e')),
+      );
+    }
+  }
+
   static void clearCache() {
     _cachedCampaigns.clear();
   }
