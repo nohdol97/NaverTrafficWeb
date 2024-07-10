@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user_provider.dart';
+import 'main_page.dart'; // Import your MainPage
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,12 +13,22 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
-      Provider.of<UserProvider>(context, listen: false).login(
-        _emailController.text + "@split.com",
-        _passwordController.text,
-      );
+      try {
+        await Provider.of<UserProvider>(context, listen: false).login(
+          _emailController.text + "@split.com",
+          _passwordController.text,
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MainPage()),
+        );
+      } catch (e) {
+        // Handle login error, e.g., show a dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: $e')),
+        );
+      }
     }
   }
 

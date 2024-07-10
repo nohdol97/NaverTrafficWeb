@@ -45,17 +45,21 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<UserProvider>(
         builder: (ctx, userProvider, _) {
-          return MaterialApp(
-            title: 'Web Dashboard',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            home: userProvider.isLoading
-                ? Center(child: CircularProgressIndicator())
-                : userProvider.userDoc != null
-                    ? MainPage()
-                    : LoginPage(),
-          );
+          if (userProvider.isLoading) {
+            return MaterialApp(
+              home: Center(child: CircularProgressIndicator()),
+            );
+          } else {
+            return MaterialApp(
+              title: 'Web Dashboard',
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              home: userProvider.userDoc != null
+                  ? MainPage()
+                  : LoginPage(),
+            );
+          }
         },
       ),
     );

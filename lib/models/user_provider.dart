@@ -24,37 +24,37 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> login(String email, String password) async {
+    isLoading = true;
+    notifyListeners();
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       await loadUserData();
 
-      // LocalStorage에 로그인 정보 저장
       await storage.ready;
       await storage.setItem('email', email);
       await storage.setItem('password', password);
       print('Login successful, stored credentials: $email');
-      isLoading = false;
-      notifyListeners();
     } catch (e) {
       print('Login failed: $e');
+      throw e;
+    } finally {
       isLoading = false;
       notifyListeners();
-      throw e;
     }
   }
 
   Future<void> logout() async {
     await _auth.signOut();
-    this._userDoc = null;
-    notifyListeners();
-
-    // LocalStorage에서 로그인 정보 삭제
+    _userDoc = null;
     await storage.ready;
     await storage.deleteItem('email');
     await storage.deleteItem('password');
+    notifyListeners();
   }
 
   Future<void> autoLogin() async {
+    isLoading = true;
+    notifyListeners();
     print('Attempting auto-login');
     await storage.ready;
     String? email = storage.getItem('email');
