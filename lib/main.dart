@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
             );
           } else {
             return MaterialApp(
-              title: 'Web Dashboard',
+              title: 'SPLIT',
               theme: ThemeData(
                 primarySwatch: Colors.blue,
               ),

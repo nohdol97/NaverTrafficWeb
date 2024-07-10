@@ -74,7 +74,7 @@ class _MainPageState extends State<MainPage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('Menu - $userName'),
+              child: Text('메뉴 - $userName'),
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),

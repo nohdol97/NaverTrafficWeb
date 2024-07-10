@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 class NoticePage extends StatelessWidget {
   final List<Map<String, String>> notices = [
-    {"id": "100014", "title": "공지사항 02/20", "date": "2024-02-20"},
-    {"id": "100012", "title": "이벤트", "date": "2024-02-05"},
+    {"id": "100014", "title": "SPLIT 에 오신 것을 환영합니다.", "date": "2024-07-10"},
     // 추가 공지사항...
   ];
 
