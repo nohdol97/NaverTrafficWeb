@@ -99,23 +99,26 @@ class _CampaignPageState extends State<CampaignPage> {
                   ),
                   IconButton(
                     icon: Icon(Icons.recycling, size: 30, color: Colors.green),
+                    onPressed: () => ExcelService.updateDataExcel(context),
+                  ),
+                  SizedBox(width: 100,)
+                ],
+                if (userProvider.userDoc!['role'] != 'master') ...[
+                  TextButton(
+                    onPressed: () async {
+                      await ExcelService.downloadExcel('SPLIT 캠페인 업로드 파일.xlsx');
+                    },
+                    child: Text(
+                      '업로드용 파일 다운로드',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.upload_file, size: 30, color: Colors.green),
                     onPressed: () => ExcelService.uploadExcelFile(userProvider.userDoc!['name'], context),
                   ),
+                  SizedBox(width: 100),
                 ],
-                TextButton(
-                  onPressed: () async {
-                    await ExcelService.downloadExcel('SPLIT 캠페인 업로드 파일.xlsx');
-                  },
-                  child: Text(
-                    '업로드용 파일 다운로드',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.upload_file, size: 30, color: Colors.green),
-                  onPressed: () => ExcelService.updateDataExcel(context),
-                ),
-                SizedBox(width: 20),
               ],
             ),
           ),

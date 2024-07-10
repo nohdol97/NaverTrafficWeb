@@ -40,17 +40,24 @@ class SearchBar extends StatelessWidget {
           ),
           SizedBox(width: 15),
           SizedBox(
-            width: 200,
+            height: 50,  // 높이를 조정
+            width: 150,  // 너비를 조정
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
                 labelText: '검색',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),  // 둥근 모서리
+                  borderSide: BorderSide.none,  // 테두리 제거
+                ),
+                filled: true,  // 배경을 채움
+                fillColor: Colors.grey[200],  // 배경 색상
+                contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),  // 내용 패딩
               ),
               onChanged: onSearchTextChanged,
             ),
           ),
-          SizedBox(width:20),
+          SizedBox(width:100),
         ],
       ),
     );
