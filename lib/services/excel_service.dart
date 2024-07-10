@@ -193,20 +193,27 @@ class ExcelService {
 
   // 아래 부터는 master 이상 전용
 
-  static Future<void> deleteExcelFile(String fileName, BuildContext context) async {
-    try {
-      final ref = FirebaseStorage.instance.ref().child(fileName);
-      await ref.delete();
+static Future<void> deleteExcelFile(String fileName, BuildContext context) async {
+  try {
+    if (fileName == 'data.xlsx' || fileName == 'SPLIT 캠페인 업로드 파일.xlsx') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('파일 삭제 성공: $fileName')),
+        SnackBar(content: Text('이 파일은 삭제할 수 없습니다: $fileName')),
       );
-    } catch (e) {
-      print('Failed to delete file: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('파일 삭제 실패: $e')),
-      );
+      return;
     }
+
+    final ref = FirebaseStorage.instance.ref().child(fileName);
+    await ref.delete();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('파일 삭제 성공: $fileName')),
+    );
+  } catch (e) {
+    print('Failed to delete file: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('파일 삭제 실패: $e')),
+    );
   }
+}
 
   static Future<void> downloadExcel(String fileName) async {
     final ref = FirebaseStorage.instance.ref().child(fileName);
