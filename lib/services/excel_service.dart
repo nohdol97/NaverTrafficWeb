@@ -53,10 +53,15 @@ class ExcelService {
               endDate = DateTime(2000, 1, 1);
             }
 
+            // 날짜만 비교할 수 있도록 시간 정보를 제거
+            DateTime onlyDateCurrent = DateTime(currentDate.year, currentDate.month, currentDate.day);
+            DateTime onlyDateStart = DateTime(startDate.year, startDate.month, startDate.day);
+            DateTime onlyDateEnd = DateTime(endDate.year, endDate.month, endDate.day);
+
             String status;
-            if (currentDate.isBefore(startDate)) {
+            if (onlyDateCurrent.isBefore(onlyDateStart)) {
               status = '시작전';
-            } else if (currentDate.isAfter(endDate)) {
+            } else if (onlyDateCurrent.isAfter(onlyDateEnd)) {
               status = '종료';
             } else {
               status = '구동중';
