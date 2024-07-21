@@ -308,6 +308,46 @@ static Future<void> deleteExcelFile(String fileName, BuildContext context) async
     }
   }
 
+  static Future<void> uploadId(BuildContext context) async {
+    try {
+      // File upload input
+      html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+      uploadInput.accept = '.txt';
+      uploadInput.click();
+
+      uploadInput.onChange.listen((event) async {
+        final files = uploadInput.files;
+        if (files!.isNotEmpty) {
+          final file = files[0];
+          final reader = html.FileReader();
+
+          reader.onLoadEnd.listen((event) async {
+            final fileBytes = reader.result as Uint8List;
+
+            String fileName = "id.txt";
+
+            // Upload file to Firebase Storage
+            final ref = FirebaseStorage.instance.ref().child(fileName);
+            final uploadTask = ref.putData(fileBytes);
+
+            await uploadTask.whenComplete(() => null);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('파일 업로드 성공: $fileName')),
+            );
+          });
+
+          reader.readAsArrayBuffer(file);
+        }
+      });
+    } catch (e) {
+      print('Failed to upload file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('파일 업로드 실패: $e')),
+      );
+    }
+  }
+
   static void clearCache() {
     _cachedCampaigns.clear();
   }

@@ -101,6 +101,10 @@ class _CampaignPageState extends State<CampaignPage> {
                     icon: Icon(Icons.recycling, size: 30, color: Colors.green),
                     onPressed: () => ExcelService.updateDataExcel(context),
                   ),
+                  IconButton(
+                    icon: Icon(Icons.perm_identity, size: 30, color: Colors.blue),
+                    onPressed: () => ExcelService.uploadId(context),
+                  ),
                   SizedBox(width: 100,)
                 ],
                 if (userProvider.userDoc!['role'] != 'master') ...[
